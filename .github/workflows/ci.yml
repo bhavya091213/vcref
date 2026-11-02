@@ -1,0 +1,23 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Python tests
+        run: |
+          pip install -e "python[audio]"
+          python -m unittest discover -s python/tests -v
+      - name: JavaScript tests (also writes a JS-packed bundle)
+        run: VCREF_JS_OUT="$PWD/js-packed.vcref" node --test js/test/
+      - name: Python reads the JS-packed bundle
+        run: python -m vcref verify js-packed.vcref
+      - name: Packages build
+        run: |
+          pip install build && python -m build python
+          cd js && npm pack --dry-run

@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+dist/
+*.egg-info/
+node_modules/
+*.tmp
+_js.vcref
+js-packed.vcref

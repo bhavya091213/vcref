@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vcref"
+version = "0.1.0"
+description = "Read, write and verify .vcref voice reference bundles for zero-shot voice-cloning TTS."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = []
+keywords = ["tts", "voice-cloning", "speech", "audio", "vcref"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+
+[project.optional-dependencies]
+audio = ["soundfile>=0.12", "numpy"]
+
+[project.scripts]
+vcref = "vcref.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/bhavya091213/vcref"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vcref"]
