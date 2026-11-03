@@ -1,6 +1,6 @@
 {
   "name": "vcref",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Read, write and verify .vcref voice reference bundles for zero-shot voice-cloning TTS.",
   "type": "module",
   "main": "./src/index.js",

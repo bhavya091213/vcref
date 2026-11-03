@@ -2,4 +2,4 @@
 from .bundle import MAGIC, VERSION, Bundle, Clip, VcrefError, pack, set_cadence
 
 __all__ = ["Bundle", "Clip", "VcrefError", "pack", "set_cadence", "MAGIC", "VERSION"]
-__version__ = "0.1.0"
+__version__ = "0.2.0"
