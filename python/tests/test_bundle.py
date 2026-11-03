@@ -36,6 +36,26 @@ class FixtureTests(unittest.TestCase):
             self.assertAlmostEqual(len(x) / sr, 0.5, places=2)
 
 
+class HelperTests(unittest.TestCase):
+    def test_explain_and_prompt(self):
+        with vcref.Bundle(FIX) as b:
+            e = b.explain("Really?")
+            self.assertEqual((e["tag"], e["why"], e["rule"]), ("question", "rule", 0))
+            self.assertEqual(b.explain("Plain.")["why"], "default")
+            self.assertEqual([c.tag for c in b.prompt("Really?")], ["question"])
+            self.assertEqual([c.tag for c in b.prompt("Really?", stack=True)], ["question", "neutral"])
+            self.assertEqual([c.tag for c in b.prompt("Plain.", stack=True)], ["neutral"])
+
+    def test_search_and_stats(self):
+        with vcref.Bundle(FIX) as b:
+            self.assertIn("question", b.search("QUEST"))
+            s = b.stats()
+            self.assertEqual(s["clips"], 2)
+            self.assertEqual(s["file_bytes"], s["clip_bytes"] + s["part_bytes"])
+            self.assertEqual(len(s["per_clip"]), 2)
+            self.assertGreater(s["clip_bytes"], 0)
+
+
 class RoundTripTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())

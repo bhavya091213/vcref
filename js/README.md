@@ -21,3 +21,14 @@ const bytes = await pack({ clips: { neutral: { flac, text: "What is said." } }, 
 ```
 
 Errors are `VcrefError`. Command line: `npx vcref info|verify <file>`, `npx vcref unpack <file> <dir>`.
+
+## Choosing and inspecting references
+
+```js
+b.explain("Really?");                 // { tag, why: "rule" | "default", rule, pattern }
+await b.prompt("Really?", true);      // [selected clip, default clip] ready for a TTS prompt
+b.search("podcast");                  // tags whose tag, label or transcript contain the text
+b.stats();                            // clipBytes, partBytes, kbps, pcm16Ratio, perClip (no decoding)
+```
+
+Guides: [compression](../docs/compression.md), [extracting references](../docs/extracting-references.md), [best practices](../docs/best-practices.md).

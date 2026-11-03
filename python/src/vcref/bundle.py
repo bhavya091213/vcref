@@ -169,6 +169,46 @@ class Bundle:
                 return tag
         return self.default
 
+    def explain(self, text):
+        """Why `select_tag(text)` returns what it does: {"tag", "why": "rule"|"default", "rule", "pattern"}."""
+        for i, (rx, tag) in enumerate(self.rules()):
+            if rx.search(text) and tag in self.manifest["clips"]:
+                return {"tag": tag, "why": "rule", "rule": i, "pattern": rx.pattern}
+        return {"tag": self.default, "why": "default", "rule": None, "pattern": None}
+
+    def prompt(self, text, stack=False):
+        """Reference clips to hand a TTS model for `text`: the rule-selected clip first, then (stack=True) the
+        default clip as a second, neutral anchor when it differs."""
+        tag = self.select_tag(text)
+        clips = [self.clip(tag)]
+        if stack and tag != self.default:
+            clips.append(self.clip(self.default))
+        return clips
+
+    def search(self, query):
+        """Tags whose tag, label or transcript contains `query` (case-insensitive), in manifest order."""
+        q = query.lower()
+        return [t for t, c in self.manifest["clips"].items()
+                if q in t.lower() or q in (c.get("label") or "").lower() or q in c["text"].lower()]
+
+    def stats(self):
+        """Sizes and bitrates from the zip directory (no audio decoding). bytes are stored sizes; `pcm16_ratio`
+        compares the clips with the same audio as raw 16-bit PCM at each clip's own sample rate."""
+        per, raw = [], 0
+        for tag, c in self.manifest["clips"].items():
+            size = self._z.getinfo(c["file"]).file_size
+            secs, sr = c.get("seconds"), c.get("sample_rate")
+            if secs and sr:
+                raw += int(secs * sr * 2)
+            per.append({"tag": tag, "seconds": secs, "sample_rate": sr, "bytes": size,
+                        "kbps": round(size * 8 / secs / 1000) if secs else None})
+        clip_bytes = sum(p["bytes"] for p in per)
+        part_bytes = sum(self._z.getinfo(p["file"]).file_size for p in self.manifest.get("parts", {}).values())
+        secs = sum(p["seconds"] or 0 for p in per)
+        return {"clips": len(per), "clip_seconds": round(secs, 1), "clip_bytes": clip_bytes, "part_bytes": part_bytes,
+                "file_bytes": clip_bytes + part_bytes, "kbps": round(clip_bytes * 8 / secs / 1000) if secs else None,
+                "pcm16_ratio": round(raw / clip_bytes, 2) if raw and clip_bytes else None, "per_clip": per}
+
     def clip(self, tag=None):
         """Clip for `tag` (unknown or None -> default) with its FLAC bytes."""
         if tag not in self.manifest["clips"]:

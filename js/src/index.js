@@ -146,6 +146,53 @@ export class Bundle {
     return this.default;
   }
 
+  /** Why selectTag(text) returns what it does: {tag, why: "rule"|"default", rule, pattern}. */
+  explain(text) {
+    const rules = this.rules();
+    for (let i = 0; i < rules.length; i++) {
+      if (rules[i].pattern.test(text) && rules[i].tag in this.manifest.clips) {
+        return { tag: rules[i].tag, why: "rule", rule: i, pattern: rules[i].pattern.source };
+      }
+    }
+    return { tag: this.default, why: "default", rule: null, pattern: null };
+  }
+
+  /** Reference clips for `text`: the rule-selected clip first, then (stack) the default as a neutral anchor. */
+  async prompt(text, stack = false) {
+    const tag = this.selectTag(text);
+    const clips = [await this.clip(tag)];
+    if (stack && tag !== this.default) clips.push(await this.clip(this.default));
+    return clips;
+  }
+
+  /** Tags whose tag, label or transcript contains `query` (case-insensitive). */
+  search(query) {
+    const q = query.toLowerCase();
+    return Object.entries(this.manifest.clips)
+      .filter(([t, c]) => t.toLowerCase().includes(q) || (c.label ?? "").toLowerCase().includes(q) || c.text.toLowerCase().includes(q))
+      .map(([t]) => t);
+  }
+
+  /** Sizes and bitrates from the zip directory (no decoding). pcm16Ratio = raw 16-bit PCM size / stored clip size. */
+  stats() {
+    const perClip = [];
+    let raw = 0;
+    for (const [tag, c] of Object.entries(this.manifest.clips)) {
+      const bytes = this._zip.entries.get(c.file).usize;
+      const seconds = c.seconds ?? null, sampleRate = c.sample_rate ?? null;
+      if (seconds && sampleRate) raw += Math.floor(seconds * sampleRate * 2);
+      perClip.push({ tag, seconds, sampleRate, bytes, kbps: seconds ? Math.round((bytes * 8) / seconds / 1000) : null });
+    }
+    const clipBytes = perClip.reduce((n, p) => n + p.bytes, 0);
+    const partBytes = Object.values(this.manifest.parts ?? {}).reduce((n, p) => n + this._zip.entries.get(p.file).usize, 0);
+    const secs = perClip.reduce((n, p) => n + (p.seconds ?? 0), 0);
+    return {
+      clips: perClip.length, clipSeconds: Math.round(secs * 10) / 10, clipBytes, partBytes, fileBytes: clipBytes + partBytes,
+      kbps: secs ? Math.round((clipBytes * 8) / secs / 1000) : null,
+      pcm16Ratio: raw && clipBytes ? Math.round((raw / clipBytes) * 100) / 100 : null, perClip,
+    };
+  }
+
   async _read(file) {
     const e = this._zip.entries.get(file);
     if (!e) throw new VcrefError(`missing entry ${file}`);

@@ -80,6 +80,21 @@ export class Bundle {
   clip(tag?: string): Promise<Clip>;
   part(name: string): Promise<Uint8Array>;
   verify(): Promise<true>;
+  explain(text: string): { tag: string; why: "rule" | "default"; rule: number | null; pattern: string | null };
+  prompt(text: string, stack?: boolean): Promise<Clip[]>;
+  search(query: string): string[];
+  stats(): BundleStats;
+}
+
+export interface BundleStats {
+  clips: number;
+  clipSeconds: number;
+  clipBytes: number;
+  partBytes: number;
+  fileBytes: number;
+  kbps: number | null;
+  pcm16Ratio: number | null;
+  perClip: { tag: string; seconds: number | null; sampleRate: number | null; bytes: number; kbps: number | null }[];
 }
 
 export interface PackOptions {

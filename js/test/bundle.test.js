@@ -17,6 +17,21 @@ test("reads the shared fixture", async () => {
   assert.equal((await b.id()).length, 12);
 });
 
+test("explain, prompt, search and stats", async () => {
+  const b = await Bundle.open(FIX);
+  const e = b.explain("Really?");
+  assert.deepEqual([e.tag, e.why, e.rule], ["question", "rule", 0]);
+  assert.equal(b.explain("Plain.").why, "default");
+  assert.deepEqual((await b.prompt("Really?")).map((c) => c.tag), ["question"]);
+  assert.deepEqual((await b.prompt("Really?", true)).map((c) => c.tag), ["question", "neutral"]);
+  assert.deepEqual((await b.prompt("Plain.", true)).map((c) => c.tag), ["neutral"]);
+  assert.ok(b.search("QUEST").includes("question"));
+  const s = b.stats();
+  assert.equal(s.clips, 2);
+  assert.equal(s.fileBytes, s.clipBytes + s.partBytes);
+  assert.ok(s.clipBytes > 0);
+});
+
 test("id matches the Python implementation", async () => {
   const b = await Bundle.open(FIX);
   const expected = (await readFile(new URL("../../fixtures/tiny.id", import.meta.url), "utf8")).trim();

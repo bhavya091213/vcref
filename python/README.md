@@ -27,3 +27,14 @@ vcref.set_cadence("voice.vcref", cadence_dict)  # rewrite only the cadence block
 ```
 
 Errors are `vcref.VcrefError`. Command line: `vcref info|verify <file>`, `vcref unpack <file> <dir> [--wav]`.
+
+## Choosing and inspecting references
+
+```python
+b.explain("Really?")                 # {'tag', 'why': 'rule'|'default', 'rule', 'pattern'}
+b.prompt("Really?", stack=True)      # [selected clip, default clip] ready for a TTS prompt
+b.search("podcast")                  # tags whose tag, label or transcript contain the text
+b.stats()                            # clip/part bytes, kbps, pcm16_ratio, per-clip sizes (no decoding)
+```
+
+Guides: [compression](../docs/compression.md), [extracting references](../docs/extracting-references.md), [best practices](../docs/best-practices.md).
