@@ -6,13 +6,37 @@
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
   "exports": {
-    ".": { "types": "./src/index.d.ts", "default": "./src/index.js" }
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    }
   },
-  "bin": { "vcref": "./bin/vcref.js" },
-  "files": ["src", "bin", "README.md", "LICENSE"],
-  "engines": { "node": ">=18" },
-  "scripts": { "test": "node --test test/" },
-  "keywords": ["tts", "voice-cloning", "speech", "audio", "vcref"],
+  "bin": {
+    "vcref": "bin/vcref.js"
+  },
+  "files": [
+    "src",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "keywords": [
+    "tts",
+    "voice-cloning",
+    "speech",
+    "audio",
+    "vcref"
+  ],
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/bhavya091213/vcref.git", "directory": "js" }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bhavya091213/vcref.git",
+    "directory": "js"
+  }
 }
